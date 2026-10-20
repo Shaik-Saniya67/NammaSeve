@@ -6,9 +6,14 @@
 
 *ನಮ್ಮ ಸೇವೆ — a calm, premium reading companion for Karnataka's public notices*
 
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-nammaseve.streamlit.app-A4231B?style=for-the-badge)](https://nammaseve.streamlit.app/)
+[![GitHub](https://img.shields.io/badge/GitHub-Shaik--Saniya67%2FNammaSeve-241711?style=for-the-badge&logo=github)](https://github.com/Shaik-Saniya67/NammaSeve)
+
 ![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-A4231B?style=for-the-badge)
 ![Groq](https://img.shields.io/badge/AI-Groq%20Llama%203.3-D99A1E?style=for-the-badge)
 ![Languages](https://img.shields.io/badge/Languages-ಕನ್ನಡ%20·%20తెలుగు%20·%20हिन्दी%20·%20English-5B140F?style=for-the-badge)
+
+### 👉 [Try NammaSeve live](https://nammaseve.streamlit.app/) &nbsp;·&nbsp; [View the source on GitHub](https://github.com/Shaik-Saniya67/NammaSeve)
 
 </div>
 
@@ -73,6 +78,13 @@ Government circulars, municipal orders and public notices are often written in f
 ---
 
 ## ⚡ Quick start (Windows)
+
+> Just want to try it? Use the live app at **[nammaseve.streamlit.app](https://nammaseve.streamlit.app/)**. To run it yourself:
+>
+> ```powershell
+> git clone https://github.com/Shaik-Saniya67/NammaSeve.git
+> cd NammaSeve
+> ```
 
 1. Keep your existing `.env` file in this folder. **Do not replace it with `.env.example`**, because `.env` holds your private API key.
 2. Install dependencies:
