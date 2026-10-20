@@ -1,51 +1,146 @@
-# NammaSeve
+<div align="center">
 
-**Understand every Kannada notice, clearly.**
+# ನ &nbsp; NammaSeve
 
-NammaSeve helps people understand Kannada public notices in Kannada, Telugu, Hindi, or English. Upload a PDF or image, get a simple explanation, ask questions grounded in the notice, inspect the extracted original text, and optionally listen to the explanation.
+### Understand every Kannada notice, clearly.
 
-## Visual refresh
+*ನಮ್ಮ ಸೇವೆ — a calm, premium reading companion for Karnataka's public notices*
 
-- **Karnataka-inspired landing page**: a Dravidian temple tower built from real 3D CSS (with depth, side faces and a gentle sway), a glowing sun with rotating rays, Western Ghats-style hills, Mysore-silk zari border, the Kannada flag colours (yellow and red), and heritage chips for Hampi, Mysuru, Belur, Halebidu and Badami.
-- **3D living background** on every page: a slowly turning rangoli floor in perspective, a tilted rotating mandala, floating gold orbs and drifting marigold petals. No JavaScript or images needed.
-- **Premium transitions**: a stage-curtain opening on first load, a soft ivory dissolve when entering the app, staggered card reveals, 3D tilt on hover and shimmering buttons.
-- Palette: warm ivory `#F6EEDA`, espresso `#241711`, kumkum red `#A4231B`, turmeric gold `#D99A1E`.
-- Glass-style cards, refined form controls, responsive layout and reduced-motion support.
-- All features, logic and settings are unchanged: only the look and feel was updated.
+![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-A4231B?style=for-the-badge)
+![Groq](https://img.shields.io/badge/AI-Groq%20Llama%203.3-D99A1E?style=for-the-badge)
+![Languages](https://img.shields.io/badge/Languages-ಕನ್ನಡ%20·%20తెలుగు%20·%20हिन्दी%20·%20English-5B140F?style=for-the-badge)
 
-## Run on Windows
+</div>
 
-1. Keep your existing `.env` file in this folder. **Do not replace it with `.env.example`**, because `.env` contains your private API key.
-2. Open PowerShell in this folder and install dependencies:
+---
+
+## ✨ What is NammaSeve?
+
+Government circulars, municipal orders and public notices are often written in formal Kannada that is hard to follow. **NammaSeve** lets anyone upload a notice and instantly get a **plain-language explanation in their own language**, then ask questions and see the **exact original sentence** behind every answer.
+
+> **Explain, don't replace.** The original text always stays within reach, and answers are grounded only in the notice you uploaded.
+
+---
+
+## 🎯 Who is it for, and how does it help?
+
+| 👤 Who | 💡 How NammaSeve helps |
+|---|---|
+| **Citizens and families** | Understand ration card, tax, scheme and eligibility notices without a translator. |
+| **Telugu, Hindi or English speakers living in Karnataka** | Read Kannada notices in the language you are most comfortable with. |
+| **Elderly and first-time readers** | Hear the explanation read aloud in simple language. |
+| **Students and job seekers** | Quickly pick out dates, documents and fees in exam or recruitment notices. |
+| **Local helpers and volunteers** | Explain notices to others, backed by the original sentence as proof. |
+| **Small businesses** | Check licence, permit and compliance notices before a deadline. |
+
+---
+
+## 🚀 Features
+
+- 📄 **Upload anything**: text PDFs, scanned PDFs, and photos (PNG, JPG, JPEG, WEBP).
+- 🔍 **Smart reading**: text PDFs are read directly, and scans fall back to **Kannada + English OCR**.
+- 🗣️ **Explanation in your language**: Kannada, Telugu, Hindi or English.
+- 🗂️ **Structured summary**: *what the notice is about, important dates, what you need to do, fees and documents.*
+- 💬 **Ask the notice**: questions in any of the four languages, answered **only** from the notice.
+- 🔗 **Evidence-first answers**: every answer cites the exact supporting Kannada sentence.
+- 🔊 **Read aloud**: generate audio of the explanation in the chosen language.
+- 🧾 **Verify**: inspect the full extracted text next to the explanation.
+- 🛡️ **Honest by design**: if something isn't in the notice, it says *"Not clearly stated in the notice."*
+
+---
+
+## 🪔 The experience
+
+- 🏛️ **Karnataka-inspired landing page**: a 3D Dravidian temple tower, glowing sun, Western Ghats hills, Mysore-silk border and the Kannada flag colours.
+- 🌸 **Living 3D background**: a rotating rangoli floor in perspective, a tilted mandala, floating gold orbs and drifting marigold petals.
+- 🎭 **Premium transitions**: a stage-curtain opening, soft dissolves between pages, staggered card reveals and 3D hover tilt.
+- 🎨 **Palette**: ivory `#F6EEDA` · espresso `#241711` · kumkum red `#A4231B` · turmeric gold `#D99A1E`.
+- 📱 Responsive on phones, and respects *reduced motion* settings.
+
+---
+
+## 🧭 How it works
+
+```
+ Upload notice ──▶ Extract text ──▶ AI explains ──▶ Ask questions ──▶ See cited sentence
+  PDF / image     PyMuPDF + OCR     Groq Llama 3.3   in 4 languages    + optional audio (gTTS)
+```
+
+1. **Bring your notice**: upload a PDF, scan or photo.
+2. **Understand the essentials**: pick a language and click *Read and explain notice*.
+3. **Ask with confidence**: type a question and get the answer plus the original sentence.
+
+---
+
+## ⚡ Quick start (Windows)
+
+1. Keep your existing `.env` file in this folder. **Do not replace it with `.env.example`**, because `.env` holds your private API key.
+2. Install dependencies:
 
    ```powershell
    py -m pip install -r requirements.txt
    ```
 
-3. Confirm `.env` contains your real Groq key and Tesseract settings, for example:
+3. Make sure `.env` contains your real values:
 
    ```dotenv
    GROQ_API_KEY=your_real_key_here
+   GROQ_MODEL=llama-3.3-70b-versatile
    TESSERACT_CMD=C:\Program Files\Tesseract-OCR\tesseract.exe
    TESSERACT_LANG=kan+eng
    ```
 
-   Replace the placeholder with your real key. Never share it or commit `.env` to GitHub.
-
-4. Start the app:
+4. Run:
 
    ```powershell
    py -m streamlit run app.py
    ```
 
-## OCR requirement
+> 🔐 Never share your API key or commit `.env` to GitHub. It is already in `.gitignore`.
 
-For scanned PDFs and images, install the Windows Tesseract OCR application with Kannada (`kan`) and English (`eng`) language data. The Python package `pytesseract` is also required; both are included in the setup instructions above.
+### OCR requirement
+For scanned PDFs and photos, install **Tesseract OCR** with the Kannada (`kan`) and English (`eng`) language data. Text-based PDFs work without it.
 
-## Files
+---
 
-- `app.py` — Streamlit interface and Groq-powered explanation/Q&A.
-- `document_reader.py` — PDF text extraction and OCR fallback.
-- `speech.py` — read-aloud audio generation.
-- `requirements.txt` — Python dependencies.
-- `.env.example` — configuration template; copy values into your own `.env` without exposing secrets.
+## 🛠️ Tech stack
+
+| Layer | Tool |
+|---|---|
+| Interface | Streamlit with custom CSS (no JavaScript) |
+| AI explanation and Q&A | Groq API, `llama-3.3-70b-versatile` |
+| PDF reading | PyMuPDF |
+| OCR | Tesseract via `pytesseract`, plus Pillow |
+| Read-aloud | gTTS |
+| Landing auto-enter | streamlit-autorefresh |
+
+## 📁 Project files
+
+| File | Purpose |
+|---|---|
+| `app.py` | Streamlit interface, premium design, Groq explanation and Q&A |
+| `document_reader.py` | PDF text extraction with OCR fallback |
+| `speech.py` | Read-aloud audio generation |
+| `requirements.txt` | Python dependencies |
+| `.env.example` | Configuration template (copy values into your own `.env`) |
+
+---
+
+## 🩺 Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| *"Add your Groq API key…"* | Put `GROQ_API_KEY` in `.env` beside `app.py` and restart. |
+| *"We couldn't extract enough text"* | Use a clearer photo or a text-based PDF. |
+| *OCR failed / missing languages* | Install Tesseract with `kan` and `eng`, and check `TESSERACT_CMD`. |
+| Fonts look plain | Kannada and Telugu fonts load from Google Fonts, so an internet connection is needed. |
+
+---
+
+<div align="center">
+
+**Rooted in Karnataka. Designed for understanding.** 🪔
+
+*NammaSeve supports understanding; it does not replace official clarification from the issuing authority.*
+
+</div>
