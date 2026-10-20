@@ -97,7 +97,7 @@ Government circulars, municipal orders and public notices are often written in f
 
    ```dotenv
    GROQ_API_KEY=your_real_key_here
-   GROQ_MODEL=llama-3.3-70b-versatile
+   GROQ_MODEL=openai/gpt-oss-120b
    TESSERACT_CMD=C:\Program Files\Tesseract-OCR\tesseract.exe
    TESSERACT_LANG=kan+eng
    ```
@@ -120,7 +120,7 @@ For scanned PDFs and photos, install **Tesseract OCR** with the Kannada (`kan`) 
 | Layer | Tool |
 |---|---|
 | Interface | Streamlit with custom CSS (no JavaScript) |
-| AI explanation and Q&A | Groq API, `llama-3.3-70b-versatile` |
+| AI explanation and Q&A | Groq API, `openai/gpt-oss-120b` |
 | PDF reading | PyMuPDF |
 | OCR | Tesseract via `pytesseract`, plus Pillow |
 | Read-aloud | gTTS |
