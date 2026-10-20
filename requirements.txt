@@ -1,0 +1,8 @@
+streamlit>=1.39.0
+groq>=0.11.0
+python-dotenv>=1.0.1
+PyMuPDF>=1.24.0
+Pillow>=10.4.0
+pytesseract>=0.3.13
+gTTS>=2.5.3
+streamlit-autorefresh>=1.0.1
