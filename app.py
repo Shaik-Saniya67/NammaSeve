@@ -1,4 +1,5 @@
 import os
+import time
 from pathlib import Path
 
 import streamlit as st
@@ -7,6 +8,8 @@ from groq import Groq
 
 from document_reader import extract_text
 from speech import make_audio
+from voice_input import render_voice_input
+from chat_utils import NOT_STATED, answer_only, detect_question_language, finalize_answer
 
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env", override=False)
@@ -155,6 +158,8 @@ div.stButton>button[kind="primary"]:hover,div.stFormSubmitButton>button[kind="pr
 [data-testid="stExpander"]{background:rgba(255,254,250,.82);border:1px solid rgba(201,160,90,.45);border-radius:14px;overflow:hidden;transition:box-shadow .4s var(--ease)}
 [data-testid="stExpander"]:hover{box-shadow:0 18px 34px -24px rgba(70,40,15,.5)}
 [data-testid="stForm"]{border:0;padding:0}
+[class*="st-key-del_"] button,[class*="st-key-listen_"] button{min-height:2.2rem;padding:.3rem 1rem}
+[class*="st-key-del_"] button p,[class*="st-key-listen_"] button p{font-size:.82rem}
 .stAlert{border-radius:12px}
 [data-testid="stSpinner"]{color:var(--bronze)}
 audio{width:100%;border-radius:14px}
@@ -187,7 +192,7 @@ LANGUAGES = {
     "हिन्दी · Hindi": "Hindi",
     "English": "English",
 }
-MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 
 def get_client():
@@ -207,6 +212,18 @@ def groq_text(client, system, user, temperature=0.1):
         messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
     )
     return (result.choices[0].message.content or "").strip()
+
+
+def delete_chat(chat_id):
+    """Remove one question-and-answer pair. Notice text and summary are not touched."""
+    st.session_state.chat_history = [
+        item for item in st.session_state.get("chat_history", []) if item.get("id") != chat_id
+    ]
+
+
+def clear_chat():
+    """Remove all question-and-answer pairs. Notice text and summary are not touched."""
+    st.session_state.chat_history = []
 
 
 def _gopuram_html():
@@ -278,6 +295,7 @@ def render_landing():
     with center:
         if st.button("Enter NammaSeve  ↗", type="primary", use_container_width=True, key="start_landing"):
             st.session_state.page = "app"
+            st.session_state.landing_started = time.time()
             st.rerun()
     st.markdown('<div class="footer-note">Rooted in Karnataka. Designed for understanding.<br>Answers are grounded in the notice—not assumptions.</div>', unsafe_allow_html=True)
 
@@ -293,6 +311,7 @@ def render_app():
         lang_label = st.selectbox("Explanation language", list(LANGUAGES.keys()), index=3, key="main_lang")
         if st.button("← Home", key="back_home"):
             st.session_state.page = "landing"
+            st.session_state.landing_started = time.time()
             st.rerun()
     target_language = LANGUAGES[lang_label]
 
@@ -368,21 +387,32 @@ def render_app():
     st.markdown('<div class="paper-card"><div class="card-kicker">STEP 03 · ASK THE NOTICE</div><h3 style="margin:.55rem 0 .35rem">A question on your mind?</h3><p class="subtle">Ask in Kannada, Telugu, Hindi, or English. Answers should rely only on this notice and include the original supporting sentence.</p>', unsafe_allow_html=True)
     with st.form("ask_form", clear_on_submit=True):
         question = st.text_input("Your question", placeholder="For example: What documents do I need?")
+        render_voice_input(target_language)
         ask = st.form_submit_button("Find answer  →", type="primary")
     if ask and question.strip():
         client = get_client()
         if not client:
             st.error("Groq API key is missing. Add it to .env and restart the app.")
         else:
+            # The answer language follows the language of THIS question (typed or voice),
+            # not the summary language. It is detected from the question text only.
+            answer_language = detect_question_language(question, fallback=target_language)
             with st.spinner("Looking for evidence in your notice…"):
                 try:
-                    system = f"""You are NammaSeve's grounded document question-answering assistant. Answer the user's question in {target_language}. Understand questions written in Kannada, Telugu, Hindi, or English. Use ONLY the supplied notice text. Never use outside knowledge or guess. Return exactly these sections: ANSWER: a concise answer in {target_language}, or 'This information is not mentioned in the notice.' SUPPORTING KANNADA SENTENCE: copy the exact supporting sentence(s) from the original notice text without translating or paraphrasing. If no sentence supports the answer, write 'No supporting sentence found in the notice.' If evidence is ambiguous or conflicting, say so. Never fabricate a quote."""
-                    prompt = f"NOTICE TEXT:\n{notice_text[:24000]}\n\nUSER QUESTION:\n{question}\n\nAnswer in {target_language} and cite the exact supporting original sentence."
-                    answer = groq_text(client, system, prompt)
-                    st.session_state.chat_history.append({"q": question, "a": answer})
+                    system = f"""You are NammaSeve's grounded document question-answering assistant. The user's question is written in {answer_language}. Write the ANSWER entirely in {answer_language}, even though the notice itself is in Kannada. Use ONLY the supplied notice text. Never use outside knowledge, never guess, and never invent dates, fees, eligibility conditions, documents, locations, or any other facts. If the notice does not clearly contain the answer, the ANSWER must be exactly: '{NOT_STATED[answer_language]}'. If the evidence is ambiguous or conflicting, say so in {answer_language}. Return exactly these two sections: ANSWER: a concise answer in {answer_language}. SUPPORTING KANNADA SENTENCE: copy the exact supporting sentence(s) from the original notice text character for character. Never translate, paraphrase, summarise, or alter this sentence; it stays in its original language whatever the answer language is. If no sentence supports the answer, write NONE. Never fabricate a quote."""
+                    prompt = f"NOTICE TEXT:\n{notice_text[:24000]}\n\nUSER QUESTION ({answer_language}):\n{question}\n\nWrite the ANSWER in {answer_language}. Copy the supporting sentence exactly as it appears in the notice."
+                    raw_answer = groq_text(client, system, prompt)
+                    answer = finalize_answer(raw_answer, notice_text, answer_language)
+                    st.session_state.chat_seq = st.session_state.get("chat_seq", 0) + 1
+                    st.session_state.chat_history.append(
+                        {"id": st.session_state.chat_seq, "q": question, "a": answer, "lang": answer_language}
+                    )
                 except Exception as exc:
                     st.error(f"Couldn't answer this question: {exc}")
-    for item in st.session_state.get("chat_history", []):
+    history = st.session_state.get("chat_history", [])
+    if history:
+        st.button("Clear chat", key="clear_chat", on_click=clear_chat)
+    for item in history:
         st.markdown("**Your question**")
         st.write(item["q"])
         answer = item["a"]
@@ -394,6 +424,19 @@ def render_app():
             st.markdown(f'<div class="source-box">{source_part.strip()}</div>', unsafe_allow_html=True)
         else:
             st.write(answer)
+        item_id = item.get("id")
+        listen_col, delete_col, _spacer = st.columns([1, 1, 4])
+        with listen_col:
+            if st.button("Listen", key=f"listen_{item_id}"):
+                with st.spinner("Preparing audio…"):
+                    try:
+                        item["audio"] = make_audio(answer_only(answer), item.get("lang", target_language))
+                    except Exception as exc:
+                        st.warning(f"Audio generation failed: {exc}")
+        with delete_col:
+            st.button("Delete", key=f"del_{item_id}", on_click=delete_chat, args=(item_id,))
+        if item.get("audio"):
+            st.audio(item["audio"], format="audio/mp3")
         st.markdown('<div class="section-rule"></div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('<div class="footer-note">NammaSeve supports understanding; it does not replace official clarification from the issuing authority.</div>', unsafe_allow_html=True)
@@ -401,8 +444,9 @@ def render_app():
 
 if "page" not in st.session_state:
     st.session_state.page = "landing"
+if "landing_started" not in st.session_state:
+    st.session_state.landing_started = time.time()
 
-# Stay on the landing page until the user explicitly clicks the entry button.
 if st.session_state.page == "landing":
     render_landing()
 else:
